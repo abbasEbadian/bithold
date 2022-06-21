@@ -1,0 +1,1 @@
+export const baseUrl = "https://api.bithold.exchange/api/v2/";  
