@@ -9,6 +9,8 @@ import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Head from "next/head";
 import ReactCodeInput from "react-code-input";
+import Particle from "../components/Particle";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     width: 100%;
@@ -136,13 +138,12 @@ const Submit = styled.button`
     }
 `;
 
-export default function ForgetPassword() {
+ function ForgetPassword() {
     const [activeTab, setActiveTab] = useState("1");
-    const [mobile, setMobile] = useState("");
+    const [mobile, setMobile] = useState("09");
     const [loading, setLoading] = useState(false);
     const [code, setCode] = useState("");
     const subHandler = async (e) => {
-        setLoading(true);
         let data = {
             mobile: mobile,
         };
@@ -152,29 +153,22 @@ export default function ForgetPassword() {
             data: data,
         };
 
+        setLoading(true);
         await axios(config)
             .then((response) => {
-                if (response.status === 200) {
-                    localStorage.setItem("mobile", mobile);
+                const {data} = response
+                if (data.error === 0) {
                     setActiveTab("2");
+                    toast.success(data.message)
                 }
-                setLoading(false);
             })
             .catch((error) => {
-                setLoading(false);
-                toast.error("شماره موبایل یا کلمه عبور اشتباه است", {
-                    position: "top-center",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
-            });
+                toast.error("شماره موبایل یا کلمه عبور اشتباه است",);
+            })
+            .finally(f=>setLoading(false))
     };
     const subHandlerTwo = (e) => {
-        setLoading(true);
+        
         let data = new FormData();
         data.append("mobile", mobile);
         data.append("code", code);
@@ -183,39 +177,22 @@ export default function ForgetPassword() {
             url: `${baseUrl}token/password/verify/`,
             data: data,
         };
-
+        setLoading(true);
         axios(config)
             .then((response) => {
-                if (response.status === 200) {
+                const {data} = response
+                if (data.error === 0) {
                     localStorage.setItem("mobile", mobile);
-                    setActiveTab("2");
-                    toast.success("رمز عبور جدید شما برایتان اس ام اس گردید", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
-                    setTimeout(() => {
-                        Router.push("/login");
-                    }, 3000);
+                    toast.success(data.message);
+                    Router.push("/login");
+                }else{
+                    toast.error(data.message)
                 }
-                setLoading(false);
             })
             .catch((error) => {
-                setLoading(false);
-                toast.error("خطایی رخ داده است", {
-                    position: "top-center",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
-            });
+                toast.error("خطایی رخ داده است");
+            })
+            .finally(f=>setLoading(false))
     };
     const handlePinChange = (pinCode) => {
         setCode(pinCode);
@@ -228,6 +205,7 @@ export default function ForgetPassword() {
                 <title>صرافی بیت هولد | فراموشی رمز عبور</title>
             </Head>
             <Content>
+                <Particle/>
                 <LeftContent>
                     <Image
                         onClick={() => {
@@ -256,10 +234,12 @@ export default function ForgetPassword() {
                                                 ? subHandler()
                                                 : "";
                                         }}
+                                        dir="ltr"
+                                        value={mobile}
                                     />
                                 </label>
                                 <div className="d-flex justify-content-center mt-3">
-                                    <Submit onClick={subHandler}>
+                                    <Submit onClick={subHandler} disabled={loading}>
                                         {loading ? (
                                             <div className="lds-ring">
                                                 <div></div>
@@ -291,7 +271,7 @@ export default function ForgetPassword() {
                                     </label>
                                 </div>
                                 <div className="d-flex justify-content-center mt-3">
-                                    <Submit onClick={subHandlerTwo}>
+                                    <Submit onClick={subHandlerTwo} disabled={loading}>
                                         {loading ? (
                                             <div className="lds-ring">
                                                 <div></div>
@@ -312,3 +292,5 @@ export default function ForgetPassword() {
         </Main>
     );
 }
+
+export default withAuth(ForgetPassword, false)

@@ -19,7 +19,6 @@ export const config_axios = () => {
         },
         error => {
             console.log(error);
-            
             Promise.reject(error) 
         }
       );

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import styled from "styled-components";
 import "bootstrap/dist/css/bootstrap.css";
 import {useRouter} from "next/router";
@@ -9,7 +9,7 @@ import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Head from "next/head";
 import Particle from "../components/Particle";
-
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     width: 100%;
@@ -19,21 +19,19 @@ const Main = styled.div`
     justify-content: center;
     background-color: rgb(191 226 239);
     padding: 24px;
+    @media (max-width: 992px) {
+        align-items: flex-start;
+        padding-top: 32px;
+    }
 `;
 
 const Content = styled.div`
-    .w-50 {
-    }
+   
     max-width: 1280px;
     display: flex;
     justify-content: center;
     width: 100%;
-    @media (max-width: 992px) {
-        .w-50 {
-            display: none !important;
-        }
-        justify-content: center;
-    }
+    margin-inline: auto;
 `;
 
 const LeftContent = styled.div`
@@ -172,7 +170,7 @@ const Submit = styled.button`
     }
 `;
 
-export default function Login() {
+function Login() {
     const [activeTab, setActiveTab] = useState("log");
     const [mobile, setMobile] = useState("");
     const [password, setPassword] = useState("");
@@ -259,8 +257,8 @@ export default function Login() {
                                 ثبت نام
                             </button>
                         </BoxHead>
-                        {/* <h4>ورود به حساب کاربری</h4> */}
-                        <label htmlFor="name">
+                        <h4 className="mb-0">ورود به حساب کاربری</h4>
+                        <label htmlFor="name" className="mt-5">
                             شماره موبایل
                             <input
                                 onChange={(e) => {
@@ -367,3 +365,5 @@ export default function Login() {
         </Main>
     );
 }
+
+export default withAuth(Login, false)

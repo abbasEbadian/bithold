@@ -14,6 +14,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import NightModeContext from "../components/Context";
 import Marquee from "react-fast-marquee";
+import SwapIcon from "../components/icons/SwapIcon";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     background-color: #edf8fc;
@@ -21,7 +23,6 @@ const Main = styled.div`
     min-height: 100vh;
 `;
 const Content = styled.div`
-    overflow: hidden;
     transition: 0.1s all;
     padding-bottom: 70px;
     @media (max-width: 1300px) {
@@ -329,16 +330,16 @@ const Change = styled.div`
     }
 `;
 
-export default function Dashboard() {
+function Dashboard() {
     const [sourcePrice, setSourcePrice] = useState();
     const [orderList, setOrderList] = useState([]);
     const [coins, setCoins] = useState([]);
     const [showMenu, setShowMenu] = useState(false);
-    const [selectedOption, setSelectedOption] = useState();
-    const [selectedOptionTwo, setSelectedOptionTwo] = useState();
+    const [selectedOption, setSelectedOption] = useState({});
+    const [selectedOptionTwo, setSelectedOptionTwo] = useState({});
     const [calcRespons, setCalcRespons] = useState();
     const [loading, setLoading] = useState(false);
-    const stts = useContext(NightModeContext);
+    const {theme} = useContext(NightModeContext);
     const [wallet, setWallet] = useState([]);
     const [destinationPrice , setDestinationPrice] = useState("")
 
@@ -348,100 +349,37 @@ export default function Dashboard() {
     const handleChangeTwo = (selectedOptionTwo) => {
         setSelectedOptionTwo(selectedOptionTwo);
     };
-    let token = "";
-    setTimeout(() => {
-        token = localStorage.getItem("token");
-    }, 2000);
-    let refreshToken = "";
-    setTimeout(() => {
-        refreshToken = localStorage.getItem("refresh_token");
-    }, 10000);
-
-    setTimeout(() => {
-        setInterval(() => {
-            inter();
-        }, 600000);
-    }, 70000);
-    const inter = () => {
-        let data = {
-            refresh: refreshToken,
-        };
-        let config = {
-            method: "POST",
-            url: `${baseUrl}token/refresh/`,
-            data: data,
-        };
-
-        axios(config)
-            .then((response) => {
-                localStorage.setItem("token", response.data.access);
-            })
-            .catch((error) => {});
-    };
 
     useEffect(() => {
-        // if (
-        //     localStorage.getItem("token") == null ||
-        //     typeof window == "undefined"
-        // ) {
-        //     Router.push("/login");
-        // }
-    }, []);
-    let config = {
-        url: `${baseUrl}service/list/`,
-        method: "GET",
-    };
-    useEffect(() => {
-        axios(config)
+
+
+        axios.get(`${baseUrl}service/list/`)
             .then((res) => {
                 setCoins(res.data);
             })
             .catch((error) => {});
-    }, []);
-    useEffect(() => {
-        setTimeout(() => {
-            let config = {
-                headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                url: `${baseUrl}wallet/list/`,
-                method: "GET",
-            };
-            axios(config)
+
+
+        axios.get(`${baseUrl}wallet/list/`)
+            .then((res) => {
+                if (res.data.error === 0) {
+                    setWallet(res.data);
+                    setBalanceHandler(res.data);
+                }
+            })
+            .catch((error) => {});
+
+        axios.get(`${baseUrl}order/list/`)
                 .then((res) => {
-                    if (res.status == "200") {
-                        setWallet(res.data);
-                        setBalanceHandler(res.data);
-                    }
-                })
-                .catch((error) => {});
-        }, 3200);
-    }, []);
-    let order_config = {};
-    setTimeout(() => {
-        order_config = {
-            headers: {
-                "Content-type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            url: `${baseUrl}order/list/`,
-            method: "GET",
-        };
-    }, 3000);
-    useEffect(() => {
-        setTimeout(() => {
-            axios(order_config)
-                .then((res) => {
-                    if (res.status == "200") {
+                    if (res.data.error === 0) {
                         setOrderList(res.data);
                     }
                 })
                 .catch((error) => {});
-        }, 3200);
+
     }, []);
 
-    // Fee
+
     let selectItem = [];
     let selectTwoItem = [];
 
@@ -476,44 +414,24 @@ export default function Dashboard() {
             type: "swap",
         };
         
-        setTimeout(() => {
-            let config = {
-                headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                method: "POST",
-                url: `${baseUrl}order/create/`,
-                data: data,
-            };
-            axios(config)
-            .then((response) => {
-                toast.success(response.data.message, {
-                    position: "top-center",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
-            })
-            .catch((error) => {
-                toast.error("خطایی وجود دارد", {
-                    position: "top-center",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
-            });
-        }, 2600);
+        let config = {
+            headers: {
+                "Content-type": "application/json",
+            },
+            method: "POST",
+            url: `${baseUrl}order/create/`,
+            data: data,
+        };
+        axios(config)
+        .then((response) => {
+            toast.success(response.data.message);
+        })
+        .catch((error) => {
+            toast.error("خطایی وجود دارد");
+        });
     };
     useEffect(() => {
         setLoading(true);
-        setTimeout(() => {
             let data = new FormData();
             data.append(
                 "destination",
@@ -533,7 +451,6 @@ export default function Dashboard() {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 method: "POST",
                 url: `${baseUrl}order/calculator/`,
@@ -546,7 +463,6 @@ export default function Dashboard() {
                     setDestinationPrice(response.data.destination_price)
                 })
                 .catch((error) => {});
-        }, 2300);
     }, [sourcePrice, selectedOption, selectedOptionTwo]);
     let newCoins = coins.filter(
         (names) =>
@@ -555,13 +471,11 @@ export default function Dashboard() {
     let newCoinsTwo = coins.filter(
         (names) => selectItem !== undefined && names.name !== selectItem.name
     );
-    console.log(orderList);
-    let x = []
     return (
         <>
             <Main
                 className={
-                    stts.night == "true" ? "bg-dark-2 max-w-1992" : "max-w-1992"
+                    theme == "light"? "bg-dark-2 max-w-1992" : "max-w-1992"
                 }
             >
                 <Head>
@@ -576,7 +490,7 @@ export default function Dashboard() {
                     <MainCoin>
                         <h2
                             className={
-                                stts.night == "true" ? "color-white-2 " : ""
+                                theme == "light"? "color-white-2 " : ""
                             }
                         >
                             ارز های اصلی
@@ -587,7 +501,7 @@ export default function Dashboard() {
                                     return (
                                         <Card
                                             className={
-                                                stts.night == "true"
+                                                theme == "light"
                                                     ? "bg-gray "
                                                     : ""
                                             }
@@ -651,7 +565,7 @@ export default function Dashboard() {
                                                 </div>
                                                 <div
                                                     className={
-                                                        stts.night == "true"
+                                                        theme == "light"
                                                             ? "color-white-2 price me-2 "
                                                             : " price me-2"
                                                     }
@@ -667,65 +581,20 @@ export default function Dashboard() {
                     </MainCoin>
                     <div className="d-flex flex-wrap to-center justify-content-around px-32 pb-100">
                         <FastOrder
-                            night={stts.night}
-                            token={token}
+                            theme={theme}
                             coins={coins}
                         />
                         <Change>
                             <h2> </h2>
                             <div
                                 className={
-                                    stts.night == "true"
+                                    theme == "light"
                                         ? "bg-gray change"
                                         : "change"
                                 }
                             >
                                 <div className="change-head">تبدیل</div>
-                                <svg
-                                    className="change-svg"
-                                    width="40"
-                                    height="40"
-                                    viewBox="0 0 40 40"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <circle
-                                        cx="20"
-                                        cy="20"
-                                        r="19"
-                                        fill="#FF9D00"
-                                        stroke="white"
-                                        strokeWidth="2"
-                                    />
-                                    <path
-                                        d="M18 16L15 13L12 16"
-                                        stroke="white"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                    <path
-                                        d="M15 27V13"
-                                        stroke="white"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                    <path
-                                        d="M22 24L25 27L28 24"
-                                        stroke="white"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                    <path
-                                        d="M25 13V27"
-                                        stroke="white"
-                                        strokeWidth="1.5"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
+                                <SwapIcon className="change-svg"/>
                                 <div className="padd">
                                     <div className="send-coin">
                                         <h6>مقدار و نوع ارز</h6>
@@ -878,14 +747,14 @@ export default function Dashboard() {
                         </Change>
                         <LastOrders
                             className={
-                                stts.night == "true" ? "color-white-2 " : ""
+                                theme == "light"? "color-white-2 " : ""
                             }
                         >
                             <h5>آخرین تراکنش ها</h5>
 
                             <table
                                 className={
-                                    stts.night == "true"
+                                    theme == "light"
                                         ? "bg-gray last-box table-striped"
                                         : "last-box table-striped"
                                 }
@@ -967,3 +836,4 @@ export default function Dashboard() {
         </>
     );
 }
+export default  withAuth(Dashboard)

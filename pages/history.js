@@ -9,6 +9,7 @@ import axios from "axios";
 import { baseUrl } from "../components/BaseUrl";
 import NightModeContext from "../components/Context";
 import moment from "jalali-moment";
+import withAuth from "../utils/withAuth";
 const Main = styled.div`
     background-color: #edf8fc;
     width: 100%;
@@ -88,8 +89,8 @@ const HistoryTable = styled.table`
     }
 `;
 
-export default function History() {
-    const stts = useContext(NightModeContext);
+function History() {
+    const {theme} = useContext(NightModeContext);
     const [showMenu, setShowMenu] = useState(false);
     const [orders, setOrders] = useState([]);
     const [transactions, setTransactions] = useState([]);
@@ -169,7 +170,7 @@ export default function History() {
     return (
         <Main
             className={
-                stts.night == "true" ? "bg-dark-2 max-w-1992" : "max-w-1992"
+                theme == "light" ? "bg-dark-2 max-w-1992" : "max-w-1992"
             }
         >
             <Head>
@@ -186,7 +187,7 @@ export default function History() {
                     <div className="scrollable">
                         <HistoryTable
                             className={
-                                stts.night == "true"
+                                theme == "light"
                                     ? "bg-gray table"
                                     : " table"
                             }
@@ -319,7 +320,7 @@ export default function History() {
                     <div className="scrollable">
                         <HistoryTable
                             className={
-                                stts.night == "true"
+                                theme == "light"
                                     ? "bg-gray table"
                                     : " table"
                             }
@@ -418,3 +419,4 @@ export default function History() {
         </Main>
     );
 }
+export default  withAuth(History)

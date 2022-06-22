@@ -13,6 +13,8 @@ import { toast } from "react-toastify";
 import PasswordFieldErrors from "../components/Auth/PasswordFieldErrors";
 import Particle from "../components/Particle";
 import Link from 'next/link'
+import EyeIcon  from "../components/icons/EyeIcon";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     background-color: #edf8fc;
@@ -115,8 +117,8 @@ const ChangeContent = styled.div`
     }
 `;
 
-export default function ChangePass() {
-    const stts = useContext(NightModeContext);
+function ChangePass() {
+    const {theme} = useContext(NightModeContext);
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordTwo, setShowPasswordTwo] = useState(false);
     const [showPasswordThree, setShowPasswordThree] = useState(false);
@@ -124,48 +126,18 @@ export default function ChangePass() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordIsInvalid, setPasswordIsInvalid] = useState(true)
+    const [loading, setLoading] = useState(false)
+
     let token = "";
     setTimeout(() => {
         token = localStorage.getItem("token");
     }, 2000);
-    // useEffect(() => {
-    //     if (
-    //         localStorage.getItem("token") == null ||
-    //         typeof window == "undefined"
-    //     ) {
-    //         Router.push("/login");
-    //     }
-    // }, []);
     const [showMenu, setShowMenu] = useState(false);
     const menuHandler = () => {
         setShowMenu(!showMenu);
     };
-    let refreshToken = "";
-    setTimeout(() => {
-        refreshToken = localStorage.getItem("refresh_token");
-    }, 2000);
 
-    setTimeout(() => {
-        setInterval(() => {
-            inter();
-        }, 600000);
-    }, 10000);
-    const inter = () => {
-        let data = {
-            refresh: refreshToken,
-        };
-        let config = {
-            method: "POST",
-            url: `${baseUrl}token/refresh/`,
-            data: data,
-        };
 
-        axios(config)
-            .then((response) => {
-                localStorage.setItem("token", response.data.access);
-            })
-            .catch((error) => {});
-    };
 
     const changePassHandler = (e) => {
         let data = new FormData();
@@ -182,28 +154,26 @@ export default function ChangePass() {
             url: `${baseUrl}account/manage/`,
             data: data,
         };
-
+        setLoading(true)
         axios(config)
             .then((response) => {
-                if (response.status === 200) {
-                    toast.info(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                if (response.data.error === 0) {
+                    toast.info(response.data.message);
+                    Router.push("profile")
+                }else{
+                    toast.error(response.data.message)
                 }
             })
-            .catch((error) => {});
+            .catch((error) => {})
+            .finally(f=>{
+                setLoading(false)
+            })
     };
 
     return (
         <Main
             className={
-                stts.night == "true" ? "bg-dark-2 max-w-1992" : "max-w-1992"
+                theme == "light" ? "bg-dark-2 max-w-1992" : "max-w-1992"
             }
         >
             <Head>
@@ -216,7 +186,7 @@ export default function ChangePass() {
 
                 <Header show-menu={menuHandler} />
                 <Particle/>
-                <ChangeMain className={stts.night == "true" ? "bg-gray" : ""}>
+                <ChangeMain className={theme == "light" ? "bg-gray" : ""}>
                     <ChangeHead>
                         <h6>تغییر رمز عبور</h6>
                     </ChangeHead>
@@ -291,7 +261,7 @@ export default function ChangePass() {
                                     transform="translate(-1 -4.5)"
                                 />
                             </svg>
-                            <PasswordFieldErrors text={newPassword} setIsInValid={setPasswordIsInvalid} />
+                            <PasswordFieldErrors text={newPassword} setIsInValid={setPasswordIsInvalid} theme={theme}/>
                         </label>
                         <label>
                             <p>تکرار رمز عبور جدید</p>
@@ -301,32 +271,26 @@ export default function ChangePass() {
                                 }}
                                 value={confirmPassword}
                                 type={!showPasswordThree ? "password" : "text"}
-                            />
-                            <svg
-                                className="show-pass"
+                                />
+                               
+                            <EyeIcon  className="show-pass"
                                 onClick={() => {
                                     setShowPasswordThree(!showPasswordThree);
-                                }}
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="22"
-                                height="15"
-                                viewBox="0 0 22 15"
-                            >
-                                <path
-                                    id="ic_remove_red_eye_24px"
-                                    d="M12,4.5A11.827,11.827,0,0,0,1,12a11.817,11.817,0,0,0,22,0A11.827,11.827,0,0,0,12,4.5ZM12,17a5,5,0,1,1,5-5A5,5,0,0,1,12,17Zm0-8a3,3,0,1,0,3,3A3,3,0,0,0,12,9Z"
-                                    transform="translate(-1 -4.5)"
-                                />
-                            </svg>
+                                }}/>
                         </label>
                             
                            
                             <button
                                 onClick={changePassHandler}
                                 className="btn-success "
-                                disabled={passwordIsInvalid || confirmPassword !== newPassword}
+                                disabled={passwordIsInvalid || !newPassword || confirmPassword !== newPassword || loading}
                             >
-                                تغییر رمز
+                                {
+                                    loading? 
+                                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    :
+                                    <div>تغییر رمز</div>
+                                }
                             </button>
                     </ChangeContent>
                 </ChangeMain>
@@ -334,3 +298,5 @@ export default function ChangePass() {
         </Main>
     );
 }
+
+export default  withAuth(ChangePass)

@@ -5,7 +5,7 @@ import styled from "styled-components";
 // import QRCode from "react-qr-code";
 import { baseUrl } from "../BaseUrl";
 import axios from "axios";
-
+import CopyIcon from '../icons/CopyIcon'
 const Main = styled.div`
     z-index: 10;
     .lds-ring {
@@ -51,6 +51,8 @@ const Main = styled.div`
     }
     .div-sel select {
         padding: 5px 10px;
+        border: 1px solid #ddd;
+        padding-left: 17px;
     }
     .btn-done {
         margin-top: 34px;
@@ -79,6 +81,7 @@ const Main = styled.div`
         background: #ffffff;
         border-radius: 16px;
         position: fixed;
+        box-shadow: 0 0 14px #0002;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
@@ -195,19 +198,14 @@ const CoinDeposit = (props) => {
     const [txId, setTxId] = useState("");
     const [loading, setLoading] = useState(false);
 
-    let token = "";
-    setTimeout(() => {
-        token = localStorage.getItem("token");
-    }, 1000);
     let item = wallet.find((i) => {
         if (i.service !== undefined) {
             return i.service.small_name_slug == itemTo.small_name_slug;
         }
     });
     const netHandler = (n) => {
-        setLoading(true);
+       
 
-        setTimeout(() => {
             let data = {
                 network: n,
                 wallet: item.id,
@@ -216,23 +214,18 @@ const CoinDeposit = (props) => {
                 method: "POST",
                 url: `${baseUrl}wallet/deposit/address/`,
                 data: data,
-                headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: {"Content-type": "application/json"}
             };
-            console.log(wallet);
-
-            axios(config)
-                .then((response) => {
-                    setLoading(false);
-                    setAdress(response.data.address);
-                })
-                .catch((error) => {});
-        }, 2100);
+        setLoading(true);
+        axios(config)
+            .then((response) => {
+                setLoading(false);
+                setAdress(response.data.address);
+            })
+            .catch((error) => {})
+        .finally(f=>setLoading(false))
     };
     const doneHandler = (n) => {
-        setTimeout(() => {
             let data = {
                 tx_id: txId,
                 wallet: item.id,
@@ -243,40 +236,22 @@ const CoinDeposit = (props) => {
                 data: data,
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
             };
-            console.log(wallet);
-
+            setLoading(true)
             axios(config)
-                .then((response) => {
-                    response.data.error != 0
-                        ? toast.error(response.data.message, {
-                              position: "top-center",
-                              autoClose: 5000,
-                              hideProgressBar: false,
-                              closeOnClick: true,
-                              pauseOnHover: true,
-                              draggable: true,
-                              progress: undefined,
-                          })
-                        : toast.success(response.data.message, {
-                              position: "top-center",
-                              autoClose: 5000,
-                              hideProgressBar: false,
-                              closeOnClick: true,
-                              pauseOnHover: true,
-                              draggable: true,
-                              progress: undefined,
-                          });
-                })
-                .catch((error) => {});
-        }, 2100);
-    };
+            .then((response) => {
+                response.data.error != 0
+                ? toast.error(response.data.message)
+                : toast.success(response.data.message);
+            })
+            .catch((error) => {})
+            .finally(f=>setLoading(false))
+    }
     return (
         <Main>
             <div
-                className={props.stts.night == "true" ? "bg-gray box" : " box"}
+                className={props.theme == "light" ? "bg-gray box" : " box"}
             >
                 {selectNetwork ? (
                     !done ? (
@@ -321,47 +296,14 @@ const CoinDeposit = (props) => {
                                     </p>
                                     <h6>آدرس کیف پول شما</h6>
                                     <div className="adress-box">
-                                        <svg
-                                            onClick={() => {
+                                    
+                                            <CopyIcon  onClick={() => {
                                                 navigator.clipboard.writeText(
                                                     adress
                                                 );
-                                                toast.success("آدرس کپی شد", {
-                                                    position: "top-center",
-                                                    autoClose: 5000,
-                                                    hideProgressBar: false,
-                                                    closeOnClick: true,
-                                                    pauseOnHover: true,
-                                                    draggable: true,
-                                                    progress: undefined,
-                                                });
+                                                toast.success("آدرس کپی شد");
                                             }}
-                                            className="c-p m-w-20 ms-1"
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <rect
-                                                x="6.99792"
-                                                y="6.99792"
-                                                width="14.0058"
-                                                height="14.0058"
-                                                rx="2"
-                                                stroke="#727272"
-                                                strokeWidth="1.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                            <path
-                                                d="M6.99792 17.0021H4.99709C3.89206 17.0021 2.99625 16.1063 2.99625 15.0013V4.99709C2.99625 3.89206 3.89206 2.99625 4.99709 2.99625H15.0013C16.1063 2.99625 17.0021 3.89206 17.0021 4.99709V6.99792"
-                                                stroke="#727272"
-                                                strokeWidth="1.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
+                                            className="c-p m-w-20 ms-1"/>
                                         {loading ? (
                                             <div className="lds-ring">
                                                 <div></div>
@@ -450,8 +392,13 @@ const CoinDeposit = (props) => {
                                 <button
                                     className="btn-done-2"
                                     onClick={doneHandler}
+                                    disabled={loading}
                                 >
-                                    ثبت
+                                    {
+                                        loading?
+                                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                                        : <div>ثبت</div>
+                                    }
                                 </button>
                             </div>
                         </TxId>

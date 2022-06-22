@@ -4,6 +4,8 @@ import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
 import { baseUrl } from "../BaseUrl";
 import axios from "axios";
+import CloseIcon from '../icons/CloseIcon'
+
 
 const Main = styled.div`
     z-index: 10;
@@ -135,7 +137,7 @@ const Limits = styled.div`
 const RialWithdraw = (props) => {
     const wallet = props.wallet;
     const itemTo = props.itemTo;
-    const [value, setValue] = useState();
+    const [value, setValue] = useState(0);
     const [bankId, setBankId] = useState();
     const [selectedOption, setSelectedOption] = useState();
     const [cards, setCards] = useState([]);
@@ -144,6 +146,8 @@ const RialWithdraw = (props) => {
     const [cardNumber, setCardNumber] = useState("");
     const [shaba, setShaba] = useState("");
     const [bank, setBank] = useState("");
+    const [addCardLoading, setAddCardLoading] = useState(false);
+
     const handleChange = (e) => {
         setSelectedOption(e.target.value);
     };
@@ -159,8 +163,7 @@ const RialWithdraw = (props) => {
                 url: `${baseUrl}bank/name/list/`,
                 data: data,
                 headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Content-type": "application/json"
                 },
             };
 
@@ -175,22 +178,17 @@ const RialWithdraw = (props) => {
     token = localStorage.getItem("token");
     let cc = [];
 
-    useEffect(() => {
-        let config = {
-            headers: {
-                "Content-type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            url: `${baseUrl}bank/list/`,
-            method: "GET",
-        };
-        axios(config)
+    const fetchcards = () => {
+        axios.get( `${baseUrl}bank/list/`)
             .then((res) => {
                 if (res.status == "200") {
                     setCards(res.data);
                 }
             })
             .catch((error) => {});
+    }
+    useEffect(() => {
+        fetchcards()
     }, []);
     cc = Object.entries(cards);
     let item = wallet.find((i) => {
@@ -210,66 +208,44 @@ const RialWithdraw = (props) => {
             data: data,
             headers: {
                 "Content-type": "application/json",
-                Authorization: `Bearer ${token}`,
             },
         };
-
+        setAddCardLoading(true)
         axios(config)
-            .then((response) => {
-                toast.error(response.data.message, {
-                    position: "top-center",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
+            .then(({data}) => {
+                if(data.bank){
+                    toast.success("افزوده شد ، بعد از تایید امکان کاربری وجود خواهد داشت.")
+                    fetchcards()
+                }else{
+                    toast.error(response.data.message);
+                }
             })
             .catch((error) => {
-                toast.error(error, {
-                    position: "top-center",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
-            });
+                toast.error(error);
+            })
+            .finally(f => setAddCardLoading(false))
     };
 
     const withdrawOtpHandler = (e) => {
+        if(!value) {
+            toast.warning("مقدار نمی تواند خالی باشد")
+            return
+        }
+        if(!selectedOption) {
+            toast.warning("کارت مقصد انتخاب نشده است")
+            return
+        }
         let config = {
             method: "GET",
             url: `${baseUrl}wallet/withdrawal/otp/`,
-            headers: {
-                "Content-type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
+            headers: {"Content-type": "application/json"},
         };
         axios(config)
             .then((response) => {
                 setGetOtp(true);
                 response.data.error > 0
-                    ? toast.error(response.data.message, {
-                          position: "top-center",
-                          autoClose: 5000,
-                          hideProgressBar: false,
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          draggable: true,
-                          progress: undefined,
-                      })
-                    : toast.success(response.data.message, {
-                          position: "top-center",
-                          autoClose: 5000,
-                          hideProgressBar: false,
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          draggable: true,
-                          progress: undefined,
-                      });
+                    ? toast.error(response.data.message)
+                    : toast.success(response.data.message);
             })
             .catch((error) => {});
     };
@@ -294,24 +270,8 @@ const RialWithdraw = (props) => {
         axios(config)
             .then((response) => {
                 response.data.error > 0
-                    ? toast.error(response.data.message, {
-                          position: "top-center",
-                          autoClose: 5000,
-                          hideProgressBar: false,
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          draggable: true,
-                          progress: undefined,
-                      })
-                    : toast.success(response.data.message, {
-                          position: "top-center",
-                          autoClose: 5000,
-                          hideProgressBar: false,
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          draggable: true,
-                          progress: undefined,
-                      });
+                    ? toast.error(response.data.message)
+                    : toast.success(response.data.message);
             })
             .catch((error) => {});
     };
@@ -321,15 +281,15 @@ const RialWithdraw = (props) => {
                 {!getOtp ? (
                     <div
                         className={
-                            props.stts.night == "true" ? "bg-gray box" : " box"
+                            props.theme == "light" ? "bg-gray box" : " box"
                         }
                     >
                         <div className="d-flex justify-content-between align-items-center mb-4">
                             <span>برداشت ریالی</span>
-                            <i onClick={() => {
+                            <CloseIcon onClick={() => {
                                     props.setBlur(false);
                                     props.setShowRialWithDrow(false);
-                                }} className="bi bi-x text-white-50"> </i>
+                                }} > </CloseIcon>
                         </div>
                         <p>
                             در صورت تمایل به برداشت موجودی کیف پول ریالی ،
@@ -375,7 +335,7 @@ const RialWithdraw = (props) => {
                                     setValue(item.balance);
                                 }}
                                 className={
-                                    props.stts.night == "true"
+                                    props.theme == "light"
                                         ? "color-white-2"
                                         : " "
                                 }
@@ -427,8 +387,14 @@ const RialWithdraw = (props) => {
                                     <button
                                         onClick={addCardHandler}
                                         className="btn-success"
+                                        disabled={addCardLoading}
                                     >
-                                        افزودن کارت
+                                        {
+                                            addCardLoading?
+                                                <div className="spinner-border" role="status"></div>
+                                            :
+                                                <div>افزودن کارت</div>
+                                        }
                                     </button>
                                 </div>
                             </AddCard>
@@ -440,21 +406,23 @@ const RialWithdraw = (props) => {
                                     className="form-control"
                                     placeholder="انتخاب"
                                     onChange={handleChange}
+                                    value={selectedOption}
                                 >
                                     <option value="">انتخاب</option>
 
                                     {cards.length !== 0
                                         ? cards.map((i) => {
-                                              if (i.status == "confirmed") {
+                                              
                                                   return (
                                                       <option
                                                           key={i.name}
                                                           value={i.id}
+                                                          disabled={i.status !== "confirmed"}
+                                                          style={{cursor: (i.status !== "confirmed"? "not-allowed" :"default")}}
                                                       >
-                                                          {i.card}
+                                                          {i.card} (تایید نشده)
                                                       </option>
                                                   );
-                                              }
                                           })
                                         : ""}
                                 </select>
@@ -479,38 +447,17 @@ const RialWithdraw = (props) => {
                 ) : (
                     <div
                         className={
-                            props.stts.night == "true" ? "bg-gray box" : " box"
+                            props.theme == "light" ? "bg-gray box" : " box"
                         }
                     >
                         <div className="d-flex justify-content-between align-items-center mb-4">
                             <span>برداشت ریالی</span>
-                            <svg
-                                onClick={() => {
+                           
+                            <CloseIcon onClick={() => {
                                     props.setBlur(false);
                                     props.setShowRialWithDrow(false);
                                 }}
-                                className="c-p"
-                                width="32"
-                                height="32"
-                                viewBox="0 0 32 32"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M12 20L20 12"
-                                    stroke="#777777"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                                <path
-                                    d="M20 20L12 12"
-                                    stroke="#777777"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
+                                className="c-p" />
                         </div>
 
                         <span>لطفا کد تایید را وارد نمایید </span>

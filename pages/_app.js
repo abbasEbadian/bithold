@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import NightModeContext from "../components/Context";
 import "../styles/globals.css";
 import "../styles/style-fix.css";
@@ -13,43 +13,86 @@ import {config_axios} from '../utils/axiosConfig'
 const BASE = "https://api.bithold.exchange/api/v2"
 const _headers = (token) => ({headers: {Authorization: "Bearer " + token}})
 const GUARDED_ROUTES = [
-    "profile",
+    'analysis',
+    "auth",
     "cards",
-
+    "change_password",
+    'dashboard',
+    'edit',
+    "history",
+    "invite",
+    "profile",
+    "phone_otp",
+    "trade",
+    "wallet"
+]
+const UNGUARDED_ROUTES = [
+    "register",
+    "login",
+    "verifycode",
+    "forgetpassword"
 ]
 
+const _fetchProfile = async() => {
+    
+}
 
 function MyApp({ Component, pageProps }) {
-    const [night, setNight] = useState(false);
+    const [theme, setTheme] = useState("dark"); // dark or light
     const [user, setUser] = useState(false);
+    const [userLoading, setUserLoading] = useState(false);
     const [authenticated, setAuthenticated] = useState(false);
-    config_axios()
-    const setStatus = (i) => {
-        setNight(i);
-    };
-    useEffect(async() => {
-        const handleRouteStart = () => NProgress.start();
-        const handleRouteDone = () => NProgress.done();
-        Router.events.on("routeChangeStart", handleRouteStart);
+    const configed = useRef(false)
+    if(!configed.current)
+        config_axios()
+    const fetchProfile = () => {
+        setUserLoading(true)
         try{
             const token = localStorage.getItem('token')
-            if(!token) throw new Error()
-            const {data} = await axios.get(BASE + "/account/details/", _headers(token))
-            setUser(data)
-            setAuthenticated(true)
+            axios.get(BASE + "/account/details/", _headers(token))
+            .then(({data}) => {
+                setUser(data)
+                setAuthenticated(true)
+            })
+            .catch(e=>{
+
+            })
         }
         catch(e){
-            console.log(e)
-            localStorage.removeItem("token")
-            const path = Router.pathname.split("/")
-            if(GUARDED_ROUTES.includes( path[path.length - 1]))
-                Router.replace("/login")
+            NProgress.done()
+            return true
         }
         finally{
-            Router.events.on("routeChangeComplete", handleRouteDone);
-            Router.events.on("routeChangeError", handleRouteDone);
+            setUserLoading(false)
+            NProgress.done()
         }
-    
+    }
+
+    useEffect(() => {
+        const handleRouteStart = () => NProgress.start();
+        const handleRouteDone = () => NProgress.done()
+
+        let path = Router.pathname.split("/")
+        path = path[ path.length -1 ]
+
+        
+
+        
+        Router.events.on("routeChangeStart",  () => {
+            handleRouteStart()
+            
+            try{
+                fetchProfile()
+            }
+            catch(e){
+            }
+            finally{
+                // handleRouteDone()
+            }
+        });
+        
+        Router.events.on("routeChangeComplete", handleRouteDone);
+        Router.events.on("routeChangeError", handleRouteDone);
         return () => {
           // Make sure to remove the event handler on unmount!
           Router.events.off("routeChangeStart", handleRouteStart);
@@ -57,18 +100,23 @@ function MyApp({ Component, pageProps }) {
           Router.events.off("routeChangeError", handleRouteDone);
         };
       }, []);
+
+ 
     useEffect(() => {
+        try{
+            fetchProfile()
+        }catch(e){}
         !function(){var i="tTAFwQ",a=window,d=document;function g(){var g=d.createElement("script"),s="https://www.goftino.com/widget/"+i,l=localStorage.getItem("goftino_"+i);g.async=!0,g.src=l?s+"?o="+l:s;d.getElementsByTagName("head")[0].appendChild(g);}"complete"===d.readyState?g():a.attachEvent?a.attachEvent("onload",g):a.addEventListener("load",g,!1);}();
     },[])
     
     return (
-        <UserContext.Provider value={{user, authenticated}}>
+        <UserContext.Provider value={{user, authenticated, fetchProfile, userLoading}}>
             <NightModeContext.Provider
                 value={{
-                    night,
-                    setStatus,
+                    theme,
+                    setTheme,
                 }}
-            >
+            >   
                 <Component {...pageProps} />
                 <ToastContainer
                     rtl={true}

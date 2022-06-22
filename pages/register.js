@@ -12,6 +12,7 @@ import Link from "next/link";
 
 import PasswordFieldErrors from "../components/Auth/PasswordFieldErrors";
 import Particle from "../components/Particle";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     width: 100%;
@@ -21,13 +22,10 @@ const Main = styled.div`
     justify-content: center;
     background-color: rgb(191 226 239);
     padding: 24px;
-    .mt-100 {
-        margin-top: 50px;
-    }
+    
+    
     @media (max-width: 992px) {
-        .mt-100 {
-            margin-top: 0px !important;
-        }
+        margin-block: 64px;
     }
 `;
 
@@ -207,7 +205,7 @@ const Submit = styled.button`
     }
 `;
 
-export default function Register() {
+function Register() {
     const [activeTab, setActiveTab] = useState("reg");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -276,13 +274,11 @@ export default function Register() {
    
     return (
         <Main>
-            
             <Head>
                 {" "}
                 <link rel="shortcut icon" href="/images/fav.png" />
                 <title>صرافی بیت هولد | ثبت نام</title>
             </Head>
-            {/* Same as */}
             <Content>
                 <LeftContent>
                     <Particle/>
@@ -438,7 +434,7 @@ export default function Register() {
                            
                             <input type="checkbox" value={accepted} onChange={e=>setAccepted(e.target.checked)} style={{width: 14, height: 14}}></input>
                             <label className="d-flex flex-row align-items-center pt-1"  style={{fontSize: 13}}>
-                                <Link href="#"><a className="mx-2">قوانین وبسایت </a></Link>
+                                <Link href="/our_rules"><a className="mx-2">قوانین وبسایت </a></Link>
                                  را  می پذیرم.
                             </label>
                         </div>
@@ -462,3 +458,4 @@ export default function Register() {
         </Main>
     );
 }
+export default withAuth(Register)

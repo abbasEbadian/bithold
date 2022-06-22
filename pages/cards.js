@@ -12,6 +12,8 @@ import {  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Head from "next/head";
 import CardIcon from '../components/icons/CardIcon'
+import UserContext from "../utils/state/userContext";
+import withAuth from "../utils/withAuth";
 const Content = styled.div`
     overflow: hidden;
     transition: 0.1s all;
@@ -131,7 +133,6 @@ const Card = styled.div`
     border: 1px solid #eee;
     border-radius: 10px;
     padding: 20px;
-    width: 100%;
     margin-top: 20px;
     justify-content: space-between;
     .divs {
@@ -139,13 +140,15 @@ const Card = styled.div`
         align-items: center;
     }
     .divs2{
-        text-align:left;
+        display:flex;
+        flex-direction: column;
+        align-items:center;
+    }
+    .divs2 *{
+        width: 80px;
     }
     @media (max-width: 576px){
-       flex-wrap: wrap;
-       .divs {
-            width: 100%;
-       } 
+       padding: 16px 8px;
     }
 `;
 
@@ -207,7 +210,7 @@ const Modal = styled.div`
     }
 `;
 
-export default function Cards() {
+function Cards() {
     const [cards, setCards] = useState([]);
     const [bankNames, setBankNames] = useState("");
     const [cardNumber, setCardNumber] = useState("");
@@ -216,7 +219,8 @@ export default function Cards() {
     const [showModal, setShowModal] = useState(false);
 
     
-    const stts = useContext(NightModeContext);
+    const {theme} = useContext(NightModeContext);
+    const {user, fetchProfile} = useContext(UserContext);
 
     
     const [showMenu, setShowMenu] = useState(false);
@@ -283,6 +287,16 @@ export default function Cards() {
             });
     };
 
+    const deleteCard = (id) => {
+        axios.post(baseUrl+`bank/${id}/remove/`)
+        .then(response => {
+            const {data} = response 
+            if(data.error === 0){
+                if(typeof fetchProfile === 'function') fetchProfile()
+            }
+            toast(data.message, {type: data.error?"error":"success"})
+        })
+    }
     return (
         <>
             <Head>
@@ -355,28 +369,30 @@ export default function Cards() {
                 <Content
                     className={
                         showMenu
-                            ? stts.night == "true"
+                            ? theme == "dark"
                                 ? "pr-176 bg-dark-2"
                                 : "pr-176 "
-                            : stts.night == "true"
+                            : theme == "dark"
                             ? "bg-dark-2"
                             : ""
                     }
                 >
                     <Header show-menu={menuHandler} />
                     <CardsMain>
-                        <Box className={stts.night == "true" ? "bg-gray" : ""}>
+                        <Box className={theme == "dark" ? "bg-gray" : ""}>
                             <h6 className="under-line">
                                 حساب یا کارت های متصل
                             </h6>
-                            {cards.map((item) => {
+                           <div className="row">
+                           {cards.map((item) => {
                                 return (
-                                    <Card key={item.card}>
+                                    <Card key={item.card} className="col-12 col-md-6 col-lg-4 col-xxl-3">
                                         <div className="divs">
                                             {" "}
-                                            <CardIcon />
+                                            
                                             <div>
                                                 <span className="me-2 d-block">
+                                                    <CardIcon />
                                                     {item.bank}
                                                 </span>
                                                 <span className="me-2 d-block">
@@ -386,20 +402,24 @@ export default function Cards() {
                                         </div>
                                         <div className="divs2">
                                             {item.status == "confirmed" ? (
-                                                <small className="text-success-2">
+                                                <small className="fs-12 badge bg-success text-white">
                                                     تایید شده
                                                 </small>
                                             ) : item.status == "pending" ? (
-                                                <small className=" text-secondary">در حال بررسی</small>
+                                                <small className="fs-12 badge bg-warning text-dark">در حال بررسی</small>
                                             ) : (
-                                                <small className="text-danger">
+                                                <small className="fs-12 badge bg-danger text-white">
                                                     رد شده
                                                 </small>
                                             )}
+                                            <small className=" btn fs-12 badge bg-danger text-white mt-2 w-100" onClick={e => deleteCard(item.id)}>
+                                                حذف
+                                            </small>
                                         </div>
                                     </Card>
                                 );
                             })}
+                           </div>
                             <AddCard
                                 onClick={() => {
                                     setShowModal(true);
@@ -414,3 +434,4 @@ export default function Cards() {
         </>
     );
 }
+export default  withAuth(Cards)

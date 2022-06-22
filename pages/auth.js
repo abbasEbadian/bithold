@@ -11,7 +11,8 @@ import axios from "axios";
 import { baseUrl } from "../components/BaseUrl";
 import NightModeContext from "../components/Context";
 import Particle from "../components/Particle";
-
+import UserContext from "../utils/state/userContext";
+import withAuth from '../utils/withAuth' 
 const Main = styled.div`
     background-color: #edf8fc;
     width: 100%;
@@ -69,61 +70,24 @@ const AuthMain = styled.div`
         font-size: 18px;
         font-weight: 600;
     }
+    @media (max-width: 576px){
+        padding: 16px;
+    }
 `;
 
-export default function Auth() {
-    const stts = useContext(NightModeContext);
+ function Auth() {
+    const {theme} = useContext(NightModeContext);
+    const [user, authenticated, fetchProfile] = useContext(UserContext);
 
-    // useEffect(() => {
-    //     if (
-    //         localStorage.getItem("token") == null ||
-    //         typeof window == "undefined"
-    //     ) {
-    //         Router.push("/login");
-    //     }
-    // }, []);
     const [showMenu, setShowMenu] = useState(false);
-    const [profile, setProfile] = useState([]);
     const menuHandler = () => {
         setShowMenu(!showMenu);
     };
 
-    let token = "";
-    setTimeout(() => {
-        token = localStorage.getItem("token");
-    }, 1000);
-    // useEffect(() => {
-    //     if (
-    //         localStorage.getItem("token") == null ||
-    //         typeof window == "undefined"
-    //     ) {
-    //         Router.push("/login");
-    //     }
-    // }, []);
-    // useEffect(() => {
-    //     setTimeout(() => {
-    //         let config = {
-    //             headers: {
-    //                 "Content-type": "application/json",
-    //                 Authorization: `Bearer ${token}`,
-    //             },
-    //             url: `${baseUrl}account/details/`,
-    //             method: "GET",
-    //         };
-    //         axios(config)
-    //             .then((res) => {
-    //                 if (res.status == "200") {
-    //                     setProfile(res.data);
-    //                 }
-    //             })
-    //             .catch((error) => {});
-    //     }, 1200);
-    // }, []);
-
     return (
         <Main
             className={
-                stts.night == "true" ? "bg-dark-2 max-w-1992" : "max-w-1992"
+                theme === "light" ? "bg-dark-2 max-w-1992" : "max-w-1992"
             }
         >
             <Head>
@@ -138,9 +102,10 @@ export default function Auth() {
                 <Particle/>
                 <AuthMain>
                     <h2>احراز هویت</h2>
-                    <Wizard stts={stts} profile={profile} token={token} />
+                    <Wizard theme={theme} profile={user}  />
                 </AuthMain>
             </Content>
         </Main>
     );
 }
+export default withAuth(Auth)

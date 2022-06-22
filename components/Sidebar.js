@@ -75,7 +75,7 @@ const SidebarUl = styled.ul`
         font-weight: 400;
         padding: 12px 0;
         padding-right: 21px;
-        font-size: 16px;
+        font-size: 13px;
         line-height: 23px;
         position: relative;
         svg {

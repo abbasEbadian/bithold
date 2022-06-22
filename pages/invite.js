@@ -10,6 +10,8 @@ import { baseUrl } from "../components/BaseUrl";
 import NightModeContext from "../components/Context";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
+import CopyIcon from "../components/icons/CopyIcon";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     background-color: #edf8fc;
@@ -89,75 +91,37 @@ const CodeBox = styled.div`
     }
 `;
 
-export default function Invite() {
+ function Invite() {
     const [refral, setRefral] = useState([]);
-    const stts = useContext(NightModeContext);
+    const {theme} = useContext(NightModeContext);
     let token = "";
-    setTimeout(() => {
-        token = localStorage.getItem("token");
-    }, 2000);
-    useEffect(() => {
-        if (
-            localStorage.getItem("token") == null ||
-            typeof window == "undefined"
-        ) {
-            Router.push("/login");
-        }
-    }, []);
+
     const [showMenu, setShowMenu] = useState(false);
     const menuHandler = () => {
         setShowMenu(!showMenu);
     };
-    let refreshToken = "";
-    setTimeout(() => {
-        refreshToken = localStorage.getItem("refresh_token");
-    }, 2000);
 
-    setTimeout(() => {
-        setInterval(() => {
-            inter();
-        }, 600000);
-    }, 10000);
-    const inter = () => {
-        let data = {
-            refresh: refreshToken,
-        };
-        let config = {
-            method: "POST",
-            url: `${baseUrl}token/refresh/`,
-            data: data,
-        };
-
-        axios(config)
-            .then((response) => {
-                localStorage.setItem("token", response.data.access);
-            })
-            .catch((error) => {});
-    };
     useEffect(() => {
-        setTimeout(() => {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 url: `${baseUrl}account/referral/`,
                 method: "GET",
             };
             axios(config)
                 .then((res) => {
-                    if (res.status == "200") {
+                    if (res.data.error === 0) {
                         setRefral(res.data);
                     }
                 })
                 .catch((error) => {});
-        }, 2200);
     }, []);
 
     return (
         <Main
             className={
-                stts.night == "true" ? "bg-dark-2 max-w-1992" : "max-w-1992"
+                theme == "light" ? "bg-dark-2 max-w-1992" : "max-w-1992"
             }
         >
             <Head>
@@ -168,7 +132,7 @@ export default function Invite() {
             <Sidebar show-menu={menuHandler} active="2" show={showMenu} />
             <Content className={showMenu ? "pr-176" : ""}>
                 <Header show-menu={menuHandler} />
-                <InviteMain className={stts.night == "true" ? "bg-gray" : ""}>
+                <InviteMain className={theme == "light" ? "bg-gray" : ""}>
                     <InviteHead>
                         <h6>دعوت از دوستان</h6>
                     </InviteHead>
@@ -191,53 +155,18 @@ export default function Invite() {
                         </Title>
                         <InviteLink>
                             <h6 className="mt-4">لینک دعوت شما:</h6>
-                            <CodeBox className="d-flex justify-content-between px-2">
+                            <CodeBox className="d-flex px-2">
                                 <p className="adress-box">
-                                    <svg
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(
-                                                ` https://www.bithold.exchange/register?referral=
-                                                        ${refral.referral_code}`
-                                            );
-                                            toast.success("آدرس کپی شد", {
-                                                position: "top-center",
-                                                autoClose: 5000,
-                                                hideProgressBar: false,
-                                                closeOnClick: true,
-                                                pauseOnHover: true,
-                                                draggable: true,
-                                                progress: undefined,
-                                            });
-                                        }}
-                                        className="c-p"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <rect
-                                            x="6.99792"
-                                            y="6.99792"
-                                            width="14.0058"
-                                            height="14.0058"
-                                            rx="2"
-                                            stroke="#727272"
-                                            strokeWidth="1.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                        <path
-                                            d="M6.99792 17.0021H4.99709C3.89206 17.0021 2.99625 16.1063 2.99625 15.0013V4.99709C2.99625 3.89206 3.89206 2.99625 4.99709 2.99625H15.0013C16.1063 2.99625 17.0021 3.89206 17.0021 4.99709V6.99792"
-                                            stroke="#727272"
-                                            strokeWidth="1.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
+                                    <CopyIcon onClick={() => {
+                                        navigator.clipboard.writeText(
+                                            ` https://www.bithold.exchange/register?referral=${refral.referral_code}`
+                                        );
+                                        toast.success("آدرس کپی شد");
+                                    }}
+                                    className="c-p"/>
                                 </p>
-                                <p>
-                                    https://www.bithold.exchange/register?referral=
+                                <p className="px-2">
+                                    {"https://www.bithold.exchange/register?referral="}
                                     {refral.referral_code}
                                 </p>
                             </CodeBox>
@@ -248,3 +177,4 @@ export default function Invite() {
         </Main>
     );
 }
+export default withAuth(Invite)

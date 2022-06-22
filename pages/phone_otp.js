@@ -10,6 +10,7 @@ import { baseUrl } from "../components/BaseUrl";
 import NightModeContext from "../components/Context";
 import { toast } from "react-toastify";
 import ReactCodeInput from "react-code-input";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     background-color: #edf8fc;
@@ -135,8 +136,8 @@ const Submit = styled.button`
         height: 38px;
     }
 `;
-export default function Edit() {
-    const stts = useContext(NightModeContext);
+function Edit() {
+    const {theme} = useContext(NightModeContext);
     const [homeCode, setHomeCode] = useState();
 
     useEffect(() => {
@@ -220,7 +221,7 @@ export default function Edit() {
     return (
         <Main
             className={
-                stts.night == "true" ? "bg-dark-2 max-w-1992" : "max-w-1992"
+                theme == "light" ? "bg-dark-2 max-w-1992" : "max-w-1992"
             }
         >
             <Head>
@@ -254,3 +255,4 @@ export default function Edit() {
         </Main>
     );
 }
+export default  withAuth(Edit)

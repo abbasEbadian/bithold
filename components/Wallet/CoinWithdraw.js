@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
 import { baseUrl } from "../BaseUrl";
 import axios from "axios";
+import { findDOMNode } from "react-dom";
 
 const Main = styled.div`
     z-index: 10;
@@ -18,6 +19,8 @@ const Main = styled.div`
     }
     .div-sel select {
         padding: 5px 10px;
+        border: 1px solid #ddd;
+        borde-radius: 4px;
     }
     .box {
         width: 595px;
@@ -28,6 +31,7 @@ const Main = styled.div`
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+        box-shadow: 0 0 14px #0002;
         padding: 32px;
         p {
             font-weight: 500;
@@ -107,63 +111,39 @@ const Submit = styled.button`
 `;
 
 const CoinWithdraw = (props) => {
-    const wallet = props.wallet;
-    const itemTo = props.itemTo;
+
+    const { itemTo, wallet } = props;
     const [adress, setAdress] = useState("");
     const [values, setValues] = useState("");
+    const [item, setItem] = useState({service: {}});
     const [network, setNetwork] = useState("");
     const [getOtp, setGetOtp] = useState(false);
     const [otp, setOtp] = useState("");
 
-    let token = "";
-    setTimeout(() => {
-        token = localStorage.getItem("token");
-    }, 1000);
-    let item = wallet.find((i) => {
-        if (i.service !== undefined) {
-            return i.service.small_name_slug == itemTo.small_name_slug;
-        }
-    });
-    console.log(item);
+
+    const findWallet = () => {
+        return wallet.find((i) => i.service.id == itemTo.id)
+    }
+    useEffect(() => {
+        setItem(findWallet()) 
+    }, [itemTo, wallet])
+
     const withdrawOtpHandler = (e) => {
-        let config = {
-            method: "GET",
-            url: `${baseUrl}wallet/withdrawal/otp/`,
-            headers: {
-                "Content-type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        };
-        axios(config)
+        if(values > item?.balance) return
+        axios.get(`${baseUrl}wallet/withdrawal/otp/`)
             .then((response) => {
                 setGetOtp(true);
                 response.data.error > 0
-                    ? toast.error(response.data.message, {
-                          position: "top-center",
-                          autoClose: 5000,
-                          hideProgressBar: false,
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          draggable: true,
-                          progress: undefined,
-                      })
-                    : toast.success(response.data.message, {
-                          position: "top-center",
-                          autoClose: 5000,
-                          hideProgressBar: false,
-                          closeOnClick: true,
-                          pauseOnHover: true,
-                          draggable: true,
-                          progress: undefined,
-                      });
+                    ? toast.error(response.data.message)
+                    : toast.success(response.data.message);
             })
-            .catch((error) => {});
+            .catch((error) => { });
     };
 
     const withdrawHandler = (e) => {
         let data = {
             amount: values,
-            id: item.id,
+            id: item?.id,
             network,
             otp,
             wallet: adress,
@@ -172,44 +152,25 @@ const CoinWithdraw = (props) => {
             method: "POST",
             url: `${baseUrl}wallet/withdrawal/`,
             data: data,
-            headers: {
-                "Content-type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
+            headers: { "Content-type": "application/json" },
         };
         axios(config)
             .then((response) => {
                 if (response.data.error > 0) {
-                    toast.error(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.error(response.data.message);
                 } else {
-                    toast.success(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.success(response.data.message);
                 }
                 // setAdress(response.data)
             })
-            .catch((error) => {});
+            .catch((error) => { });
     };
     return (
         <Main>
             {getOtp ? (
                 <div
                     className={
-                        props.stts.night == "true" ? "bg-gray box" : " box"
+                        props.theme == "light" ? "bg-gray box" : " box"
                     }
                 >
                     <div className="d-flex justify-content-between align-items-center mb-4">
@@ -253,7 +214,7 @@ const CoinWithdraw = (props) => {
                     <div className="w-100 d-flex justify-content-center">
                         <Submit
                             onClick={withdrawHandler}
-                            disabled={values > item.balance}
+                            disabled={values > (item?.balance)}
                         >
                             ثبت درخواست برداشت
                         </Submit>
@@ -262,7 +223,7 @@ const CoinWithdraw = (props) => {
             ) : (
                 <div
                     className={
-                        props.stts.night == "true" ? "bg-gray box" : " box"
+                        props.theme == "light" ? "bg-gray box" : " box"
                     }
                 >
                     <div className="d-flex justify-content-between align-items-center mb-4">
@@ -303,9 +264,9 @@ const CoinWithdraw = (props) => {
                         <>
                             <p className="text-red">
                                 کارمزد انتقال در شبکه{" "}
-                                {item !== undefined ? item.service.name : ""}:{" "}
-                                {item.service.withdraw.fee}
-                                {item.service.small_name_slug}
+                                {item !== undefined ? item?.service.name : ""}:{" "}
+                                {item?.service.withdraw?.fee}
+                                {item?.service.small_name_slug}
                             </p>
                             <span>میزان برداشت {item.service.name} </span>
                         </>
@@ -322,12 +283,12 @@ const CoinWithdraw = (props) => {
                         />
                         <button
                             className={
-                                props.stts.night == "true"
+                                props.theme == "light"
                                     ? "color-white-2"
                                     : " "
                             }
                             onClick={() => {
-                                setValues(item.balance);
+                                setValues(item?.balance || 0);
                             }}
                         >
                             کل موجودی
@@ -360,7 +321,7 @@ const CoinWithdraw = (props) => {
                             })}
                         </select>
                     </div>
-                    {values > item.balance ? (
+                    {values > item?.balance ? (
                         <div className="text-danger mt-2 me-2">
                             موجودی ناکافی !
                         </div>
@@ -371,9 +332,10 @@ const CoinWithdraw = (props) => {
                         <Submit
                             onClick={withdrawOtpHandler}
                             disabled={
-                                values > item.balance ||
+                                values > item?.balance ||
                                 network.length == 0 ||
                                 values.length == 0 ||
+                                values == "0" ||
                                 adress.length == 0
                             }
                         >

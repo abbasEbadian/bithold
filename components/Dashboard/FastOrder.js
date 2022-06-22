@@ -276,14 +276,20 @@ const FastOrder = (props) => {
 
     const [buyError, setBuyError] = useState(false);
     const [sellError, setSellError] = useState(false);
-    let configs = {
-        url: `${baseUrl}service/list/`,
-        method: "GET",
-    };
+
     useEffect(() => {
-        axios(configs)
+        axios.get(`${baseUrl}service/list/`)
             .then((res) => {
                 setCoins(res.data);
+            })
+            .catch((error) => {});
+        
+        axios.get(`${baseUrl}wallet/list/`)
+            .then((res) => {
+                if (res.data.error === 1) {
+                    setWallet(res.data);
+                    setBalance(res.data);
+                }
             })
             .catch((error) => {});
     }, []);
@@ -296,33 +302,10 @@ const FastOrder = (props) => {
                   );
               })
             : "";
-    let token = "";
-    setTimeout(() => {
-        token = localStorage.getItem("token");
-    }, 2000);
 
     let toman = [];
     let usdt = [];
-    useEffect(() => {
-        setTimeout(() => {
-            let config = {
-                headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                url: `${baseUrl}wallet/list/`,
-                method: "GET",
-            };
-            axios(config)
-                .then((res) => {
-                    if (res.status == "200") {
-                        setWallet(res.data);
-                        setBalance(res.data);
-                    }
-                })
-                .catch((error) => {});
-        }, 3000);
-    }, []);
+
     const setBalance = (e) => {
         usdt = e.find((i) => {
             return i.service.name == "تتر";
@@ -343,7 +326,6 @@ const FastOrder = (props) => {
 
     //
     useEffect(() => {
-        setTimeout(() => {
             let data = new FormData();
             setBtnDis(true);
             data.append(
@@ -365,7 +347,6 @@ const FastOrder = (props) => {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 method: "POST",
                 url: `${baseUrl}order/calculator/`,
@@ -399,10 +380,8 @@ const FastOrder = (props) => {
                     }
                 })
                 .catch((error) => {});
-        }, 2000);
     }, [selectedCoinTwo, shopActive, buyAmount]);
     useEffect(() => {
-        setTimeout(() => {
             let data = new FormData();
             setBtnDis(true);
             data.append(
@@ -424,7 +403,6 @@ const FastOrder = (props) => {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 method: "POST",
                 url: `${baseUrl}order/calculator/`,
@@ -458,13 +436,11 @@ const FastOrder = (props) => {
                     }
                 })
                 .catch((error) => {});
-        }, 2000);
     }, [selectedCoin, shopActive, sellAmount]);
 
     const buyHandler = (e) => {
         setLoading(true);
 
-        setTimeout(() => {
             let data = {
                 changed: "destination",
                 description: "",
@@ -487,7 +463,6 @@ const FastOrder = (props) => {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 method: "POST",
                 url: `${baseUrl}order/create/`,
@@ -495,35 +470,18 @@ const FastOrder = (props) => {
             };
             axios(config)
                 .then((response) => {
-                    toast.success(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
-                    setLoading(false);
+                    toast.success(response.data.message);
                 })
                 .catch((error) => {
-                    toast.error("خطایی وجود دارد", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
-                    setLoading(false);
-                });
-        }, 3000);
+                    toast.error("خطایی وجود دارد");
+                })
+                .finally(f=>{
+                    setLoading(false)
+                })
     };
     const sellHandler = (e) => {
         setLoading(true);
         setSellShowModal(false);
-        setTimeout(() => {
             let data = {
                 changed: "source",
                 description: "",
@@ -548,7 +506,6 @@ const FastOrder = (props) => {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 method: "POST",
                 url: `${baseUrl}order/create/`,
@@ -556,30 +513,12 @@ const FastOrder = (props) => {
             };
             axios(config)
                 .then((response) => {
-                    toast.success(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
-                    setLoading(false);
+                    toast.success(response.data.message);
                 })
                 .catch((error) => {
-                    toast.error("خطایی وجود دارد", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
-                    setLoading(false);
-                });
-        }, 3000);
+                    toast.error("خطایی وجود دارد",);
+                })
+                .finally(f=>setLoading(false))
     };
     let selectItem = [];
     let selectTwoItem = [];
@@ -590,10 +529,9 @@ const FastOrder = (props) => {
     let withotTether = coins.filter(
         (names) => selectItem !== undefined && names.name !== "تتر"
     );
-    console.log(buyError);
     return (
         <Main>
-            <h6 className={props.night == "true" ? "color-white-2" : ""}>
+            <h6 className={props.theme == "light" ? "color-white-2" : ""}>
                 سفارش سریع
             </h6>
 
@@ -788,8 +726,8 @@ const FastOrder = (props) => {
             ) : (
                 ""
             )}
-            <Box className={props.night == "true" ? "bg-gray " : ""}>
-                <BoxHead className={props.night == "true" ? "bg-dark-2" : ""}>
+            <Box className={props.theme == "light" ? "bg-gray " : ""}>
+                <BoxHead className={props.theme == "light" ? "bg-dark-2" : ""}>
                     <button
                         onClick={() => {
                             setActiveTab("buy");
@@ -801,7 +739,7 @@ const FastOrder = (props) => {
                         className={
                             activeTab === "buy"
                                 ? "buy-active"
-                                : props.night == "true"
+                                : props.theme == "light"
                                 ? "color-white-2"
                                 : ""
                         }
@@ -820,7 +758,7 @@ const FastOrder = (props) => {
                         className={
                             activeTab === "sell"
                                 ? "sell-active"
-                                : props.night == "true"
+                                : props.theme == "light"
                                 ? "color-white-2"
                                 : ""
                         }
@@ -851,7 +789,7 @@ const FastOrder = (props) => {
                     </div>
                 </div>
                 <Inventory
-                    className={props.night == "true" ? "color-white-2" : ""}
+                    className={props.theme == "light" ? "color-white-2" : ""}
                 >
                     <span>موجودی شما :</span>
                     {!sellActive ? (
@@ -900,7 +838,7 @@ const FastOrder = (props) => {
                             <SelectCoin>
                                 <h5
                                     className={
-                                        props.night == "true"
+                                        props.theme == "light"
                                             ? "color-white-2"
                                             : ""
                                     }
@@ -988,7 +926,7 @@ const FastOrder = (props) => {
                                 <div className="d-flex align-items-center justify-content-between">
                                     <h5
                                         className={
-                                            props.night == "true"
+                                            props.theme == "light"
                                                 ? "color-white-2"
                                                 : ""
                                         }
@@ -998,7 +936,7 @@ const FastOrder = (props) => {
                                 </div>
                                 <input
                                     className={
-                                        props.night == "true" ? "bg-dark-2" : ""
+                                        props.theme == "light" ? "bg-dark-2" : ""
                                     }
                                     placeholder="مقدار"
                                     type="number"
@@ -1041,7 +979,7 @@ const FastOrder = (props) => {
                             <SelectCoin>
                                 <h5
                                     className={
-                                        props.night == "true"
+                                        props.theme == "light"
                                             ? "color-white-2"
                                             : ""
                                     }
@@ -1097,7 +1035,7 @@ const FastOrder = (props) => {
                                 <div className="d-flex align-items-center justify-content-between">
                                     <h5
                                         className={
-                                            props.night == "true"
+                                            props.theme == "light"
                                                 ? "color-white-2"
                                                 : ""
                                         }
@@ -1120,7 +1058,7 @@ const FastOrder = (props) => {
                                 </div>
                                 <input
                                     className={
-                                        props.night == "true" ? "bg-dark-2" : ""
+                                        props.theme == "light" ? "bg-dark-2" : ""
                                     }
                                     onChange={(e) => {
                                         setSellAmount(e.target.value);

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useContext } from "react";
 import styled from "styled-components";
 import "bootstrap/dist/css/bootstrap.css";
 import Router, { useRouter } from "next/router";
@@ -12,6 +12,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { loadFull } from "tsparticles";
 import Particles from "react-tsparticles";
 import Particle from "../components/Particle";
+
+import UserContext from "../utils/state/userContext";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     width: 100%;
@@ -30,6 +33,7 @@ const Content = styled.div`
     display: flex;
     justify-content: center;
     width: 100%;
+    margin-inline: auto;
     @media (max-width: 992px) {
         .w-50 {
             display: none !important;
@@ -126,10 +130,11 @@ const Submit = styled.button`
     }
 `;
 
-export default function Register() {
+ function Register() {
+    const {fetchProfile} = useContext(UserContext)
     const router = useRouter()
     const [activeTab, setActiveTab] = useState("log");
-    const [counter, setCounter] = useState(2);
+    const [counter, setCounter] = useState(60);
     const [code, setCode] = useState("");
     const [loading, setLoading] = useState(false);
     const {mobile, action, id} = router.query
@@ -151,9 +156,13 @@ export default function Register() {
     }, [mobile, action, id])
 
     useEffect(() => {
-        setTimeout(()=>{
+        const t = setTimeout(()=>{
             if(counter > 0) setCounter(counter - 1)
         }, 1000)
+
+        return () => {
+            clearTimeout(t)
+        }
     }, [counter]);
 
 
@@ -184,6 +193,7 @@ export default function Register() {
                         localStorage.setItem("token", response.data.access);
                         localStorage.setItem("refresh_token",response.data.refresh);
                         toast.success("ورود موفق")
+                        if(fetchProfile) fetchProfile()
                         Router.push("/dashboard");
                     }else if(authData.action === "signup"){
                         toast.success("حساب شما با موفقیت ایجاد شد")
@@ -337,3 +347,4 @@ export default function Register() {
         </Main>
     );
 }
+export default withAuth(Register, false)

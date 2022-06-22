@@ -18,9 +18,10 @@ const Main = styled.div`
     }
     .box {
         width: 595px;
-        height: 100%;
+        height: auto;
         background: #ffffff;
         border-radius: 16px;
+        box-shadow: 0 0 14px #0002;
         position: fixed;
         top: 50%;
         left: 50%;
@@ -313,7 +314,7 @@ const RialDeposit = (props) => {
     return (
         <Main>
             <div
-                className={props.stts.night == "true" ? "bg-gray box" : " box"}
+                className={props.theme == "light" ? "bg-gray box" : " box"}
             >
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <span>واریز به کیف پول ریالی</span>
@@ -383,7 +384,7 @@ const RialDeposit = (props) => {
                         <div className="price-boxs">
                             <PriceBox
                                 className={
-                                    props.stts.night == "true"
+                                    props.theme == "light"
                                         ? "color-white-2"
                                         : ""
                                 }
@@ -395,7 +396,7 @@ const RialDeposit = (props) => {
                             </PriceBox>
                             <PriceBox
                                 className={
-                                    props.stts.night == "true"
+                                    props.theme == "light"
                                         ? "color-white-2"
                                         : ""
                                 }
@@ -407,7 +408,7 @@ const RialDeposit = (props) => {
                             </PriceBox>
                             <PriceBox
                                 className={
-                                    props.stts.night == "true"
+                                    props.theme == "light"
                                         ? "color-white-2"
                                         : ""
                                 }
@@ -419,7 +420,7 @@ const RialDeposit = (props) => {
                             </PriceBox>
                             <PriceBox
                                 className={
-                                    props.stts.night == "true"
+                                    props.theme == "light"
                                         ? "color-white-2"
                                         : ""
                                 }
@@ -431,7 +432,7 @@ const RialDeposit = (props) => {
                             </PriceBox>
                             <PriceBox
                                 className={
-                                    props.stts.night == "true"
+                                    props.theme == "light"
                                         ? "color-white-2"
                                         : ""
                                 }
@@ -444,7 +445,7 @@ const RialDeposit = (props) => {
                         </div>
                         <div
                             className={
-                                props.stts.night == "true"
+                                props.theme == "light"
                                     ? "color-white-2  only-box d-flex align-items-center justify-content-center"
                                     : "  only-box d-flex align-items-center justify-content-center"
                             }
@@ -462,19 +463,18 @@ const RialDeposit = (props) => {
                             >
                                 <option value="انتخاب کارت">انتخاب کارت</option>
                                 {cards.map((i) => {
-                                    if (i.status == "confirmed") {
+                                    
                                         return (
-                                            <option key={i.card} value={i.id}>
-                                                {i.card}
+                                            <option key={i.card} value={i.id} disabled={i.status != "confirmed"}>
+                                                {i.card} (تایید نشده)
                                             </option>
                                         );  
-                                    }
                                 })}
                             </select>
                         </div>
                         <div className="w-100 d-flex justify-content-center">
-                            <Submit className="mt-3" onClick={bankHandler}>
-                                واریز
+                            <Submit className="mt-3" onClick={bankHandler} disabled={!cardId || !value}>
+                                واریز 
                             </Submit>
                         </div>
                     </>

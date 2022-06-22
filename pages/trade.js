@@ -11,6 +11,7 @@ import NightModeContext from "../components/Context";
 import Select from "react-select";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
+import withAuth from "../utils/withAuth";
 
 const Main = styled.div`
     background-color: #edf8fc;
@@ -303,8 +304,8 @@ const SelectCoin = styled.div`
     }
 `;
 
-export default function Dashboard() {
-    const stts = useContext(NightModeContext);
+function Dashboard() {
+    const {theme} = useContext(NightModeContext);
     const [coins, setCoins] = useState([]);
     const [wallet, setWallet] = useState([]);
     const [sellCustomPrice, setSellCustomPrice] = useState(false);
@@ -345,50 +346,16 @@ export default function Dashboard() {
     const [buyError, setBuyError] = useState(false);
     const [sellError, setSellError] = useState(false);
 
-    let token = "";
-    setTimeout(() => {
-        token = localStorage.getItem("token");
-    }, 200);
+ 
     let toman = [];
     let usdt = [];
-    useEffect(() => {
-        if (
-            localStorage.getItem("token") == null ||
-            typeof window == "undefined"
-        ) {
-            Router.push("/login");
-        }
-    }, []);
+    
     const [showMenu, setShowMenu] = useState(false);
     const menuHandler = () => {
         setShowMenu(!showMenu);
     };
-    let refreshToken = "";
-    setTimeout(() => {
-        refreshToken = localStorage.getItem("refresh_token");
-    }, 2000);
 
-    setTimeout(() => {
-        setInterval(() => {
-            inter();
-        }, 600000);
-    }, 10000);
-    const inter = () => {
-        let data = {
-            refresh: refreshToken,
-        };
-        let config = {
-            method: "POST",
-            url: `${baseUrl}token/refresh/`,
-            data: data,
-        };
 
-        axios(config)
-            .then((response) => {
-                localStorage.setItem("token", response.data.access);
-            })
-            .catch((error) => {});
-    };
     const fullscreenHandler = (e) => {
         setFullscreen(true);
     };
@@ -404,12 +371,7 @@ export default function Dashboard() {
     };
 
     useEffect(() => {
-        setTimeout(() => {
             let config = {
-                headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
                 url: `${baseUrl}wallet/list/`,
                 method: "GET",
             };
@@ -421,7 +383,6 @@ export default function Dashboard() {
                     }
                 })
                 .catch((error) => {});
-        }, 300);
     }, []);
 
     let config = {
@@ -446,7 +407,6 @@ export default function Dashboard() {
         tradingViewHandler(selectedCoinTwo);
     };
     useEffect(() => {
-        setTimeout(() => {
             let data = new FormData();
             data.append(
                 "destination",
@@ -469,7 +429,6 @@ export default function Dashboard() {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 method: "POST",
                 url: `${baseUrl}order/calculator/`,
@@ -502,7 +461,6 @@ export default function Dashboard() {
                     }
                 })
                 .catch((error) => {});
-        }, 300);
     }, [
         selectedCoinTwo,
         shopActiveTwo,
@@ -534,7 +492,6 @@ export default function Dashboard() {
             let config = {
                 headers: {
                     "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 method: "POST",
                 url: `${baseUrl}order/calculator/`,
@@ -601,8 +558,7 @@ export default function Dashboard() {
             };
             let config = {
                 headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Content-type": "application/json"
                 },
                 method: "POST",
                 url: `${baseUrl}order/create/`,
@@ -662,8 +618,7 @@ export default function Dashboard() {
             };
             let config = {
                 headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Content-type": "application/json"
                 },
                 method: "POST",
                 url: `${baseUrl}order/create/`,
@@ -718,8 +673,7 @@ export default function Dashboard() {
             };
             let config = {
                 headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Content-type": "application/json"
                 },
                 method: "POST",
                 url: `${baseUrl}schedule/create/`,
@@ -775,8 +729,7 @@ export default function Dashboard() {
             };
             let config = {
                 headers: {
-                    "Content-type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Content-type": "application/json"
                 },
                 method: "POST",
                 url: `${baseUrl}schedule/create/`,
@@ -839,7 +792,7 @@ export default function Dashboard() {
     return (
         <Main
             className={
-                stts.night == "true" ? "bg-dark-2 max-w-1992" : "max-w-1992"
+                theme == "light" ? "bg-dark-2 max-w-1992" : "max-w-1992"
             }
         >
             <Head>
@@ -1065,7 +1018,7 @@ export default function Dashboard() {
                 <Header show-menu={menuHandler} />
                 <TradeMain>
                     <div className="">
-                        {stts.night == "true" ? (
+                        {theme == "light" ? (
                             <>
                                 <iframe
                                     className={
@@ -1131,12 +1084,12 @@ export default function Dashboard() {
                     </div>
                 </TradeMain>
                 <div className="d-flex flex-wrap w-100 justify-content-around">
-                    <TradeBox className={stts.night == "true" ? "bg-gray" : ""}>
+                    <TradeBox className={theme == "light" ? "bg-gray" : ""}>
                         <div className="box-head buy-head">خرید</div>
                         <div className="box-content">
                             <Inventory
                                 className={
-                                    stts.night == "true" ? "color-white-2" : ""
+                                    theme == "light" ? "color-white-2" : ""
                                 }
                             >
                                 <span>موجودی شما :</span>
@@ -1211,7 +1164,7 @@ export default function Dashboard() {
                             <SelectCoin>
                                 <h5
                                     className={
-                                        stts.night == "true"
+                                        theme == "light"
                                             ? "color-white-2"
                                             : ""
                                     }
@@ -1377,12 +1330,12 @@ export default function Dashboard() {
                             </button>
                         </div>
                     </TradeBox>
-                    <TradeBox className={stts.night == "true" ? "bg-gray" : ""}>
+                    <TradeBox className={theme == "light" ? "bg-gray" : ""}>
                         <div className="box-head sell-head">فروش</div>
                         <div className="box-content">
                             <Inventory
                                 className={
-                                    stts.night == "true" ? "color-white-2" : ""
+                                    theme == "light" ? "color-white-2" : ""
                                 }
                             >
                                 <span>موجودی شما :</span>
@@ -1431,7 +1384,7 @@ export default function Dashboard() {
                             <SelectCoin>
                                 <h5
                                     className={
-                                        stts.night == "true"
+                                        theme == "light"
                                             ? "color-white-2"
                                             : ""
                                     }
@@ -1606,3 +1559,6 @@ export default function Dashboard() {
         </Main>
     );
 }
+
+
+export default withAuth(Dashboard)

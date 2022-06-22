@@ -20,7 +20,7 @@ export const VALIDATORS = [
 
 function PasswordFieldErrors({text, setIsInValid}) {
     const [invalids, setInvalids] = React.useState([])
-    const stts = React.useContext(NightModeContext);
+    const {theme} = React.useContext(NightModeContext);
     const validate = React.useCallback((text)=>{
         var reg;
         let invs = []
@@ -51,7 +51,7 @@ function PasswordFieldErrors({text, setIsInValid}) {
                                 :
                                 <i className='bi bi-check text-success'></i>
                             }
-                            <small className={stts.night === "true" ?  "text-white-50" : 'text-black-50'}>{item.text}</small>
+                            <small className={theme==='light' ?  "text-white-50" : 'text-black-50'}>{item.text}</small>
                         </li>
                 })}
             </ul>
