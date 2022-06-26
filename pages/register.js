@@ -238,7 +238,8 @@ function Register() {
             last_name: lastName,
             mobile: mobile,
             password: password,
-            ref_code: code
+            ref_code: code,
+            ref_mobile: code,
         };
 
         let config = {
@@ -434,7 +435,7 @@ function Register() {
                            
                             <input type="checkbox" value={accepted} onChange={e=>setAccepted(e.target.checked)} style={{width: 14, height: 14}}></input>
                             <label className="d-flex flex-row align-items-center pt-1"  style={{fontSize: 13}}>
-                                <Link href="/our_rules"><a className="mx-2">قوانین وبسایت </a></Link>
+                                <Link href="/our_rules"><a className="mx-2" target={"_blank"}>قوانین وبسایت </a></Link>
                                  را  می پذیرم.
                             </label>
                         </div>
@@ -458,4 +459,4 @@ function Register() {
         </Main>
     );
 }
-export default withAuth(Register)
+export default withAuth(Register, false)

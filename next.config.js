@@ -1,7 +1,9 @@
 module.exports = {
   reactStrictMode: true,
     images: {
-    domains: ['blog.bithold.exchange'],
+      loader: 'akamai',
+      path: '', 
+      domains: ['blog.bithold.exchange'],
   },
     experimental: {
     outputStandalone: true,

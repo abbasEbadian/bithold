@@ -249,6 +249,7 @@ const HeadMain = styled.div`
         position: absolute;
         z-index: 0;
         height: 100%;
+        display: block !important;
     }
     @media (min-width: 1200px) {
         padding-bottom: 140px;

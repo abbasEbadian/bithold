@@ -325,9 +325,13 @@ function Dashboard() {
     useEffect(() => {
         const ttr = computeAllT()
         setAllT(ttr)
-        const t = coins.find(i => i.small_name_slug === "USDT" )
-        setAllR( ttr * (t?.show_price_irt || 0))
     }, [wallet])
+    useEffect(() => {
+        const t = coins.find(i => i.small_name_slug === "USDT" )
+        setAllR( allT * (t?.show_price_irt || 0))
+    }, [allT, coins])
+    
+    
 
 
     const menuHandler = () => {
@@ -423,7 +427,7 @@ function Dashboard() {
                                         <WalletIn /> 
                                         
                                         <div>
-                                            {allR?.toLocaleString()}
+                                            {Number((allR)?.toFixed())?.toLocaleString('fa')}
                                             <span className="mx-2 fs-12">تومان</span>
                                         </div>
                                     </div>
@@ -473,8 +477,10 @@ function Dashboard() {
                                 </thead>
                                 <tbody>
                                     {coins.map((item, index) => {
+                                        const wall = wallet.find(i=>i.service.id === item.id)
+                                        const usdt = coins.find(i=>i.small_name_slug === "USDT")
                                         return (
-                                            <tr key={item.row}>
+                                            <tr key={item.id}>
                                                 <td scope="row" className="pt-12 remove-mob-2">
                                                     {index+1}
                                                 </td>
@@ -487,15 +493,18 @@ function Dashboard() {
                                                 </td>
                                                 <td className="align-middle"> 
                                                     {
-                                                        wallet.find(i=>i.service.id === item.id) 
+                                                        wall
                                                         &&
-                                                        wallet.find(i=>i.service.id === item.id).balance
+                                                         Number(wall.balance).toLocaleString()
                                                         ||
                                                         0
                                                     }
                                                     <span className="mx-1 text-center fs-12">
                                                         {item.small_name_slug}
                                                     </span>
+                                                    {/* { wall && wall.balance > 0? <><br/><small>
+                                                        {wall.balance * wall.service.buyPrice} {" usdt"}
+                                                    </small></>: undefined} */}
                                                 </td>
                                                 <td className="align-middle ">
                                                     <button

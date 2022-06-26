@@ -37,48 +37,7 @@ const Main = styled.div`
     .css-1s2u09g-control {
         width: 100% !important;
     }
-    .toggle {
-        cursor: pointer;
-        display: block;
-        margin-bottom: 20px !important;
-        margin-top: 20px;
-        pointer-events: none;
-    }
-    .toggle-checkbox {
-        position: absolute;
-        visibility: hidden;
-    }
-    .toggle-switch {
-        margin-left: 10px;
-        display: inline-block;
-        background: #293a44;
-        border-radius: 16px;
-        width: 45px;
-        height: 20px;
-        position: relative;
-        vertical-align: middle;
-        transition: background 0.25s;
-        pointer-events: all;
-    }
-    .toggle-switch:after,
-    .toggle-switch:before {
-        content: "";
-    }
-    .toggle-switch:before {
-        display: block;
-        background: linear-gradient(180deg, #fff 0, #eee);
-        border-radius: 50%;
-        width: 17px;
-        height: 17px;
-        position: absolute;
-        top: 1px;
-        left: 3px !important;
-        transition: left 0.25s;
-        transition: 0.5s;
-    }
-    .checked:before {
-        right: 3px !important;
-    }
+    
     .my-modal {
         position: fixed;
         width: 360px;
@@ -292,6 +251,8 @@ const Inventory = styled.div`
 
 const SelectCoin = styled.div`
     width: 100% !important;
+    z-index:3;
+    position:relative;
     h5 {
         font-size: 16px;
         font-weight: 400;
@@ -566,27 +527,11 @@ function Dashboard() {
             };
             axios(config)
                 .then((response) => {
-                    toast.success(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.success(response.data.message);
                     setLoading(false);
                 })
                 .catch((error) => {
-                    toast.error("خطایی وجود دارد", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.error("خطایی وجود دارد");
                     setLoading(false);
                 });
         }, 330);
@@ -626,27 +571,11 @@ function Dashboard() {
             };
             axios(config)
                 .then((response) => {
-                    toast.success(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.success(response.data.message);
                     setLoading(false);
                 })
                 .catch((error) => {
-                    toast.error("خطایی وجود دارد", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.error("خطایی وجود دارد");
                     setLoading(false);
                 });
         }, 330);
@@ -681,27 +610,11 @@ function Dashboard() {
             };
             axios(config)
                 .then((response) => {
-                    toast.success(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.success(response.data.message);
                     setLoading(false);
                 })
                 .catch((error) => {
-                    toast.error("خطایی وجود دارد", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.error("خطایی وجود دارد");
                     setLoading(false);
                 });
         }, 330);
@@ -737,27 +650,11 @@ function Dashboard() {
             };
             axios(config)
                 .then((response) => {
-                    toast.success(response.data.message, {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.success(response.data.message);
                     setLoading(false);
                 })
                 .catch((error) => {
-                    toast.error("خطایی وجود دارد", {
-                        position: "top-center",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
+                    toast.error("خطایی وجود دارد");
                     setLoading(false);
                 });
         }, 330);
@@ -1223,7 +1120,7 @@ function Dashboard() {
                                     ""
                                 )}
                             </SelectCoin>
-                            <div className=" mt-3">
+                            <div className=" my-4">
                                 {!buyCustomPrice ? (
                                     <div className="position-relative">
                                         <span>مقدار</span>
@@ -1249,7 +1146,7 @@ function Dashboard() {
                                     </div>
                                 ) : (
                                     <div className="d-flex">
-                                        <div className="mt-3 ms-2 mb-3">
+                                        <div className="ms-2 ">
                                             <div>
                                                 <span>مقدار</span>
                                                 <input
@@ -1270,7 +1167,7 @@ function Dashboard() {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="mt-3 me-2 mb-3">
+                                        <div className="me-2 ">
                                             <div>
                                                 <span>در قیمت</span>
                                                 <input

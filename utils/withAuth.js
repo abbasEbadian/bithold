@@ -10,7 +10,7 @@ const withAuth = (WrappedComponent, authOnly=true) => {
 
         console.log(accessToken , authOnly )
       // If there is no access token we redirect to "/" page.
-      if (!accessToken && authOnly ) {
+      if (!accessToken && authOnly) {
         location.href = "/login"
         return null;
       }

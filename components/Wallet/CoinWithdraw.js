@@ -28,7 +28,7 @@ const Main = styled.div`
         background: #ffffff;
         border-radius: 16px;
         position: fixed;
-        top: 50%;
+        top: 425px;
         left: 50%;
         transform: translate(-50%, -50%);
         box-shadow: 0 0 14px #0002;
@@ -50,16 +50,12 @@ const Main = styled.div`
     @media (max-width: 992px) {
         .box {
             width: 90% !important;
-            z-index: 1;
         }
     }
     @media (max-width: 786px) {
         .to-col {
             flex-direction: column;
             align-items: center;
-        }
-        .box {
-            height: 520px !important;
         }
     }
 `;
@@ -160,6 +156,7 @@ const CoinWithdraw = (props) => {
                     toast.error(response.data.message);
                 } else {
                     toast.success(response.data.message);
+                    if(props.setShowCoinWithDrow) props.setShowCoinWithDrow(false)
                 }
                 // setAdress(response.data)
             })

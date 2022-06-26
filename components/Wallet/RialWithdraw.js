@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { baseUrl } from "../BaseUrl";
 import axios from "axios";
 import CloseIcon from '../icons/CloseIcon'
+import { numberToWords } from "@persian-tools/persian-tools";
 
 
 const Main = styled.div`
@@ -14,7 +15,8 @@ const Main = styled.div`
         background: #ffffff;
         border-radius: 16px;
         position: fixed;
-        top: 50%;
+        box-shadow: 0 0 14px #0002;
+        top: 425px;
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 32px;
@@ -36,7 +38,6 @@ const Main = styled.div`
     @media (max-width: 992px) {
         .box {
             width: 90% !important;
-            z-index: 1;
         }
     }
     @media (max-width: 786px) {
@@ -44,9 +45,8 @@ const Main = styled.div`
             flex-direction: column;
             align-items: center;
         }
-        .box {
-            height: 560px !important;
-        }
+        
+        
     }
 `;
 
@@ -128,9 +128,18 @@ const Limits = styled.div`
     justify-content: space-around;
     margin-bottom: 10px;
     margin-top: 20px;
+    flex-direction: row;
     span {
         display: block;
         text-align: center;
+    }
+    @media (max-width: 768px){
+        flex-direction: column;
+        span{
+            margin-bottom: 8px;
+            display:flex;
+            span{margin-inline: 16px}
+        }
     }
 `;
 
@@ -147,14 +156,13 @@ const RialWithdraw = (props) => {
     const [shaba, setShaba] = useState("");
     const [bank, setBank] = useState("");
     const [addCardLoading, setAddCardLoading] = useState(false);
+    const [getOtp, setGetOtp] = useState(false);
+    const [otp, setOtp] = useState("");
 
     const handleChange = (e) => {
         setSelectedOption(e.target.value);
     };
-    const [getOtp, setGetOtp] = useState(false);
-    const [otp, setOtp] = useState("");
     useEffect(() => {
-        setTimeout(() => {
             let data = {
                 wallet: itemTo.id,
             };
@@ -162,9 +170,6 @@ const RialWithdraw = (props) => {
                 method: "GET",
                 url: `${baseUrl}bank/name/list/`,
                 data: data,
-                headers: {
-                    "Content-type": "application/json"
-                },
             };
 
             axios(config)
@@ -172,7 +177,6 @@ const RialWithdraw = (props) => {
                     setBankNames(response.data);
                 })
                 .catch((error) => {});
-        }, 2000);
     }, []);
     let token = "";
     token = localStorage.getItem("token");
@@ -235,12 +239,7 @@ const RialWithdraw = (props) => {
             toast.warning("کارت مقصد انتخاب نشده است")
             return
         }
-        let config = {
-            method: "GET",
-            url: `${baseUrl}wallet/withdrawal/otp/`,
-            headers: {"Content-type": "application/json"},
-        };
-        axios(config)
+        axios.get(`${baseUrl}wallet/withdrawal/otp/`)
             .then((response) => {
                 setGetOtp(true);
                 response.data.error > 0
@@ -269,16 +268,19 @@ const RialWithdraw = (props) => {
 
         axios(config)
             .then((response) => {
-                response.data.error > 0
-                    ? toast.error(response.data.message)
-                    : toast.success(response.data.message);
+                if(response.data.error > 0){   
+                    toast.error(response.data.message)
+                }else{
+                    toast.success(response.data.message);
+                    if(props.setShowRialWithDrow) props.setShowRialWithDrow(false)
+                }
             })
             .catch((error) => {});
     };
     return (
         <>
             <Main>
-                {!getOtp ? (
+                {!getOtp? (
                     <div
                         className={
                             props.theme == "light" ? "bg-gray box" : " box"
@@ -328,8 +330,10 @@ const RialWithdraw = (props) => {
                                 onChange={(e) => {
                                     setValue(e.target.value);
                                 }}
+                                onClick={e=>setValue("")}
                                 type="text"
                             />
+                            {value && +value>0 && <small className="text-success">{numberToWords(value)} تومان</small>}
                             <button
                                 onClick={() => {
                                     setValue(item.balance);
@@ -343,7 +347,7 @@ const RialWithdraw = (props) => {
                                 کل موجودی
                             </button>
                         </InputBox>
-                        {cards.length == 0 ? (
+                        {cards.length == 0  ? (
                             <AddCard>
                                 <span className="d-block mt-4 mb-3">
                                     افزودن کارت
@@ -420,7 +424,7 @@ const RialWithdraw = (props) => {
                                                           disabled={i.status !== "confirmed"}
                                                           style={{cursor: (i.status !== "confirmed"? "not-allowed" :"default")}}
                                                       >
-                                                          {i.card} (تایید نشده)
+                                                          {i.card} {i.status !== "confirmed"? "(تایید نشده)" : ""}
                                                       </option>
                                                   );
                                           })
@@ -436,7 +440,7 @@ const RialWithdraw = (props) => {
                                 <div className="w-100 d-flex justify-content-center">
                                     <Submit
                                         onClick={withdrawOtpHandler}
-                                        disabled={value > item.balance || itemTo.withdraw.min > value || itemTo.withdraw.max < value}
+                                        disabled={value > item.balance || itemTo.withdraw.min > value || itemTo.withdraw.max < value || !selectedOption}
                                     >
                                         ثبت درخواست برداشت
                                     </Submit>
@@ -451,7 +455,7 @@ const RialWithdraw = (props) => {
                         }
                     >
                         <div className="d-flex justify-content-between align-items-center mb-4">
-                            <span>برداشت ریالی</span>
+                            <span>برداشت ریالی ({Number(value).toLocaleString("fa")} ت)</span>
                            
                             <CloseIcon onClick={() => {
                                     props.setBlur(false);
@@ -461,6 +465,7 @@ const RialWithdraw = (props) => {
                         </div>
 
                         <span>لطفا کد تایید را وارد نمایید </span>
+                        
                         <InputBox>
                             <input
                                 value={otp}

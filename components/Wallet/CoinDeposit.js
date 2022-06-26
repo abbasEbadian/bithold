@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
-// import QRCode from "react-qr-code";
+import {QRCodeSVG} from 'qrcode.react';
 import { baseUrl } from "../BaseUrl";
 import axios from "axios";
 import CopyIcon from '../icons/CopyIcon'
@@ -81,8 +81,8 @@ const Main = styled.div`
         background: #ffffff;
         border-radius: 16px;
         position: fixed;
-        box-shadow: 0 0 14px #0002;
-        top: 50%;
+        box-shadow: 0 0 14px #0004;
+        top: 425px;
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 32px;
@@ -149,7 +149,6 @@ const Main = styled.div`
     @media (max-width: 992px) {
         .box {
             width: 90% !important;
-            z-index: 1;
         }
     }
     @media (max-width: 786px) {
@@ -164,7 +163,7 @@ const Main = styled.div`
             margin-top: 40px;
         }
         .adress-box {
-            width: 240px !important;
+            width: 100% !important;
             margin-right: 0;
             font-size: 12px;
         }
@@ -256,7 +255,7 @@ const CoinDeposit = (props) => {
                 {selectNetwork ? (
                     !done ? (
                         <>
-                            <div className="d-flex justify-content-between align-items-center mb-4">
+                            <div className="d-flex justify-content-between align-items-center mb-4" style={{zIndex: 4}}> 
                                 <span>واریز به کیف پول شما</span>
                                 <svg
                                     onClick={() => {
@@ -316,12 +315,12 @@ const CoinDeposit = (props) => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="qr-code">
-                                    {/* <QRCode value={adress} /> */}
+                                {adress &&<div className="qr-code">
+                                     <QRCodeSVG value={adress} size={256} />
                                     <div className="text-red">
                                         بارکد آدرس کیف پول
                                     </div>
-                                </div>
+                                </div>}
                                 <div className="position-absolute"></div>
                             </div>
                             <div className="text-center mx-auto">
@@ -329,6 +328,7 @@ const CoinDeposit = (props) => {
                                     لطفا بعد از واریز ، روی دکمه واریز کردم کلیک
                                     کنید .
                                 </span>
+                                <br />
                                 <button
                                     onClick={() => {
                                         setDone(true);

@@ -23,7 +23,7 @@ const Main = styled.div`
         border-radius: 16px;
         box-shadow: 0 0 14px #0002;
         position: fixed;
-        top: 50%;
+        top: 425px;
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 32px;
@@ -44,16 +44,12 @@ const Main = styled.div`
     @media (max-width: 992px) {
         .box {
             width: 90% !important;
-            z-index: 1;
         }
     }
     @media (max-width: 786px) {
         .to-col {
             flex-direction: column;
             align-items: center;
-        }
-        .box {
-            height: 520px !important;
         }
     }
     .price-boxs {
@@ -465,8 +461,8 @@ const RialDeposit = (props) => {
                                 {cards.map((i) => {
                                     
                                         return (
-                                            <option key={i.card} value={i.id} disabled={i.status != "confirmed"}>
-                                                {i.card} (تایید نشده)
+                                            <option key={i.card} value={i.id} disabled={i.status !== "confirmed"}>
+                                                {i.card} {i.status !== "confirmed"? "(تایید نشده)": ""}
                                             </option>
                                         );  
                                 })}
